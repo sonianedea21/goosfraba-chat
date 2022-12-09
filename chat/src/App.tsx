@@ -1,14 +1,13 @@
 import React from 'react';
 import './App.css';
 import {BarGraph} from "./components/BarGraph";
-import {useDataHook} from "./components/useDataHook";
 
 
 function App() {
-    const {loading, error} = useDataHook();
-
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error :(</p>;
+    // const {loading, error} = useDataHook();
+    //
+    // if (loading) return <p>Loading...</p>;
+    // if (error) return <p>Error :(</p>;
 
     return (
         <div className="App">

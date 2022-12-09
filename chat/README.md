@@ -25,8 +25,8 @@ Challenges
 - goosfraba faker not working (sometimes) - https://fakerql.goosfraba.ro/
 
 All in all, I think this process would have been quite easy (and enjoyable) if I had had some experience with graphql
-beforehand. And if
-I were to work with a more robust dummy API.
+beforehand. And if I were to work with a more robust dummy API. I left some dummy data in useDataHook in case faker is
+still down when you're testing my solution.
 
 # Getting Started with Create React App
 

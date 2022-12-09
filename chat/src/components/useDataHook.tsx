@@ -1,10 +1,27 @@
-import {gql, useQuery} from "@apollo/client";
+import {ApolloError, gql, useQuery} from "@apollo/client";
+import {AnyScaleBand} from "@visx/shape/lib/types";
 import {scaleBand, scaleLinear} from "@visx/scale";
+import {useMemo} from "react";
 
-export type DataType = { id: string, month: string };
-export type GraphData = { month: string, data: DataType[] }
+export type RawDataType = { id: string, month: string };
+export type DataType = { month: string, data: RawDataType[] }
 
-export const useDataHook = () => {
+
+type DataHookType = {
+    arrayOfObj: DataType[],
+    width: number,
+    height: number,
+    xPoint: (arrayOfObj: DataType) => any,
+    yPoint: (arrayOfObj: DataType) => any,
+    yMax: number,
+    xScale: AnyScaleBand,
+    x: (d: DataType) => string,
+    y: (d: DataType) => number,
+    loading: boolean,
+    error: ApolloError | undefined
+}
+
+export const useDataHook = (): DataHookType => {
     const {data: correctData, loading, error} = useQuery(gql`
     query AllPosts {
       allPosts(count: 1000) {
@@ -17,42 +34,54 @@ export const useDataHook = () => {
 
     const limitYear = new Date('2019-01-01T00:00:00');
     const limitInSeconds = Math.floor(limitYear.getTime());
-
     const posts = correctData?.allPosts;
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
 
-    let filtered: DataType[] = [];
+    const filtered: RawDataType[] = useMemo(() => {
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
 
-    posts?.forEach((item: {
-        id: string,
-        month: number;
-        published: boolean,
-        createdAt: string
-    }) => {
-        if (item.published && (parseInt(item.createdAt) > limitInSeconds)) {
-            filtered.push({
-                id: item.id,
-                month: monthNames[new Date(parseInt(item.createdAt, 10)).getMonth()]
-            })
-        }
-    })
+        return posts?.forEach((item: {
+            id: string,
+            month: number;
+            published: boolean,
+            createdAt: string
+        }) => {
+            if (item.published && (parseInt(item.createdAt) > limitInSeconds)) {
+                return ({
+                    id: item.id,
+                    month: monthNames[new Date(parseInt(item.createdAt, 10)).getMonth()]
+                })
+            }
+        })
+    }, [limitInSeconds, posts])
 
-    const groupBy = (arr: DataType[], keys: (keyof DataType)[]): { [key: string]: DataType[] } => {
-        return arr.reduce((storage, item) => {
+
+    const groupBy = (arr: RawDataType[], keys: (keyof RawDataType)[]): { [key: string]: RawDataType[] } => {
+        return arr?.reduce((storage, item) => {
+            console.log('HERE')
             const objKey = keys.map(key => `${item[key]}`).join(':');
+            console.log('HERE alta')
             if (storage[objKey]) {
                 storage[objKey].push(item);
             } else {
                 storage[objKey] = [item];
             }
             return storage;
-        }, {} as { [key: string]: DataType[] });
+        }, {} as { [key: string]: RawDataType[] });
     }
-    const grouped: { [p: string]: DataType[] } = groupBy(filtered, ['month']);
 
-    const arrayOfObj = Object.entries(grouped).map((e) => {
+    const grouped: { [p: string]: RawDataType[] } = groupBy(filtered, ['month']);
+
+// dummy data in case faker is down
+    const dummy = {
+        "January": [{id: 'test', month: 'jan'}, {id: 'test', month: 'jan'}],
+        "April": [{id: 'tesdst', month: 'apr'}],
+        "February": [{id: 'tesdsst', month: 'feb'}],
+        "March": [{id: 'tessdddt', month: 'mar'}],
+    }
+
+    const arrayOfObj: DataType[] = Object.entries(grouped).map((e) => {
         return {month: e[0], data: e[1]}
     });
 
@@ -63,8 +92,8 @@ export const useDataHook = () => {
     const xMax = width - margin.left - margin.right;
     const yMax = height - margin.top - margin.bottom;
 
-    const x = (d: GraphData) => d.month;
-    const y = (d: GraphData) => d.data?.length;
+    const x = (d: DataType) => d.month;
+    const y = (d: DataType) => d.data?.length;
 
 // Scale graph by data
     const xScale = scaleBand({
@@ -80,7 +109,8 @@ export const useDataHook = () => {
     });
 
 // Compose together the scale and accessor functions to get point functions
-    const compose = (scale: any, accessor: any) => (arrayOfObj: GraphData) => scale(accessor(arrayOfObj));
+    const compose = (scale: any, accessor: any) => (arrayOfObj: DataType) => scale(accessor(arrayOfObj));
+
     const xPoint = compose(xScale, x);
     const yPoint = compose(yScale, y);
 

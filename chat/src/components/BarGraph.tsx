@@ -1,9 +1,8 @@
 import React from 'react';
+import {DataType, useDataHook} from "./useDataHook";
 import {Group} from "@visx/group";
 import {Bar} from "@visx/shape";
 import {Label} from "@visx/annotation";
-
-import {GraphData, useDataHook} from "./useDataHook";
 
 
 export function BarGraph() {
@@ -11,7 +10,7 @@ export function BarGraph() {
 
     return (
         <svg width={width} height={height}>
-            {arrayOfObj.map((d: GraphData, i: number) => {
+            {arrayOfObj.map((d: DataType, i: number) => {
                 const barHeight = yMax - yPoint(d);
 
                 return (
