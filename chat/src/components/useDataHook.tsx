@@ -1,7 +1,7 @@
 import {ApolloError, gql, useQuery} from "@apollo/client";
 import {AnyScaleBand} from "@visx/shape/lib/types";
 import {scaleBand, scaleLinear} from "@visx/scale";
-import {useMemo} from "react";
+import {useCallback, useMemo} from "react";
 
 export type RawDataType = { id: string, month: string };
 export type DataType = { month: string, data: RawDataType[] }
@@ -15,14 +15,12 @@ type DataHookType = {
     yPoint: (arrayOfObj: DataType) => any,
     yMax: number,
     xScale: AnyScaleBand,
-    x: (d: DataType) => string,
-    y: (d: DataType) => number,
     loading: boolean,
-    error: ApolloError | undefined
+    error: ApolloError | undefined,
 }
 
 export const useDataHook = (): DataHookType => {
-    const {data: correctData, loading, error} = useQuery(gql`
+    const {loading, error, data} = useQuery(gql`
     query AllPosts {
       allPosts(count: 1000) {
         id
@@ -34,7 +32,7 @@ export const useDataHook = (): DataHookType => {
 
     const limitYear = new Date('2019-01-01T00:00:00');
     const limitInSeconds = Math.floor(limitYear.getTime());
-    const posts = correctData?.allPosts;
+    const posts = data?.allPosts;
 
     const filtered: RawDataType[] = useMemo(() => {
         const monthNames = ["January", "February", "March", "April", "May", "June",
@@ -57,7 +55,7 @@ export const useDataHook = (): DataHookType => {
     }, [limitInSeconds, posts])
 
 
-    const groupBy = (arr: RawDataType[], keys: (keyof RawDataType)[]): { [key: string]: RawDataType[] } => {
+    const groupBy = useCallback((arr: RawDataType[], keys: (keyof RawDataType)[]): { [key: string]: RawDataType[] } => {
         return arr?.reduce((storage, item) => {
             const objKey = keys.map(key => `${item[key]}`).join(':');
             if (storage[objKey]) {
@@ -67,7 +65,7 @@ export const useDataHook = (): DataHookType => {
             }
             return storage;
         }, {} as { [key: string]: RawDataType[] });
-    }
+    }, [])
 
     const grouped: { [p: string]: RawDataType[] } = groupBy(filtered, ['month']);
 
@@ -79,7 +77,7 @@ export const useDataHook = (): DataHookType => {
         "March": [{id: 'tessdddt', month: 'mar'}],
     }
 
-    const arrayOfObj: DataType[] = Object.entries(grouped).map((e) => {
+    const arrayOfObj: DataType[] = Object.entries(grouped || []).map((e) => {
         return {month: e[0], data: e[1]}
     });
 
@@ -100,6 +98,7 @@ export const useDataHook = (): DataHookType => {
         domain: arrayOfObj.map(x),
         padding: 0.4,
     });
+
     const yScale = scaleLinear({
         range: [yMax, 0],
         round: true,
@@ -112,5 +111,5 @@ export const useDataHook = (): DataHookType => {
     const xPoint = compose(xScale, x);
     const yPoint = compose(yScale, y);
 
-    return {arrayOfObj, width, height, xPoint, yPoint, yMax, xScale, x, y, loading, error};
+    return {arrayOfObj, width, height, xPoint, yPoint, yMax, xScale, loading, error};
 }

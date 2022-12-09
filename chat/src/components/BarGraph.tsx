@@ -2,7 +2,6 @@ import React from 'react';
 import {DataType, useDataHook} from "./useDataHook";
 import {Group} from "@visx/group";
 import {Bar} from "@visx/shape";
-import {Label} from "@visx/annotation";
 
 
 export function BarGraph() {
@@ -15,8 +14,6 @@ export function BarGraph() {
 
                 return (
                     <>
-                        <Label title={d.month}/>
-                        <h1>{d.month}</h1>
                         <Group key={`bar-${i}`}>
                             <Bar
                                 x={xPoint(d)}
