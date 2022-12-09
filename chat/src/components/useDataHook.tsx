@@ -59,9 +59,7 @@ export const useDataHook = (): DataHookType => {
 
     const groupBy = (arr: RawDataType[], keys: (keyof RawDataType)[]): { [key: string]: RawDataType[] } => {
         return arr?.reduce((storage, item) => {
-            console.log('HERE')
             const objKey = keys.map(key => `${item[key]}`).join(':');
-            console.log('HERE alta')
             if (storage[objKey]) {
                 storage[objKey].push(item);
             } else {
