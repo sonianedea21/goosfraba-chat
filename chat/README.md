@@ -1,6 +1,7 @@
 Process and choices:
 
-- read Graphql + Apollo documentation to get the main ideas and how to implement them in a project
+- read Graphql + Apollo documentation to get the main ideas and how to implement them in a project. Watched a graphql
+  tutorial.
 - created Github repo
 - create app with CRA + Typescript
 - install visx + graphql

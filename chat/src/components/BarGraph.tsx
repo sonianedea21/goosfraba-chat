@@ -1,17 +1,13 @@
 import React from 'react';
-import {GraphData, useDataHook} from "./useDataHook";
 import {Group} from "@visx/group";
 import {Bar} from "@visx/shape";
 import {Label} from "@visx/annotation";
 
+import {GraphData, useDataHook} from "./useDataHook";
+
 
 export function BarGraph() {
     const {arrayOfObj, width, height, xPoint, yPoint, yMax, xScale} = useDataHook();
-
-// call sa vina 1k
-// stocat intr-un array
-// daca previous call nu are length de 1k, atunci call again si adaugat la array
-// dar cum stiu de unde sa inceapa
 
     return (
         <svg width={width} height={height}>
@@ -23,7 +19,6 @@ export function BarGraph() {
                         <Label title={d.month}/>
                         <h1>{d.month}</h1>
                         <Group key={`bar-${i}`}>
-
                             <Bar
                                 x={xPoint(d)}
                                 y={yMax - barHeight}
@@ -38,10 +33,8 @@ export function BarGraph() {
                             >
                                 {d.month}
                             </text>
-
                         </Group>
                     </>
-
                 );
             })}
         </svg>
